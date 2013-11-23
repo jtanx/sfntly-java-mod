@@ -41,10 +41,12 @@ public class CMapTableBuilder {
 
   private final Font.Builder fontBuilder;
   private final Map<Integer, Integer> mapping;
+  private final CMapTable.CMapId cmapId;
 
-  public CMapTableBuilder(Font.Builder fontBuilder, Map<Integer, Integer> mapping) {
+  public CMapTableBuilder(Font.Builder fontBuilder, Map<Integer, Integer> mapping, CMapTable.CMapId cmapId) {
     this.fontBuilder = fontBuilder;
     this.mapping = mapping;
+    this.cmapId = cmapId;
   }
 
   private class CMap4Segment {
@@ -148,7 +150,7 @@ public class CMapTableBuilder {
   public void build() {
     CMapTable.Builder cmapTableBuilder = (CMapTable.Builder) fontBuilder.newTableBuilder(Tag.cmap);
     CMapFormat4.Builder cmapBuilder =
-        (CMapFormat4.Builder) cmapTableBuilder.newCMapBuilder(CMapTable.CMapId.WINDOWS_BMP,
+        (CMapFormat4.Builder) cmapTableBuilder.newCMapBuilder(cmapId,
             CMapFormat.Format4);
     buildCMapFormat4(cmapBuilder, getFormat4Segments());
   }
