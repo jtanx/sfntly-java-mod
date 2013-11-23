@@ -20,6 +20,9 @@ import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.Font.Builder;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.table.core.HorizontalMetricsTable;
+import com.google.typography.font.sfntly.table.truetype.Glyph;
+import com.google.typography.font.sfntly.table.truetype.GlyphTable;
+import com.google.typography.font.sfntly.table.truetype.LocaTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,13 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
     super(Tag.hmtx, Tag.hhea);
   }
   
+  private static Glyph getGlyph(LocaTable locaTable, GlyphTable glyphTable, int glyphId) {
+      int offset = locaTable.glyphOffset(glyphId);
+      int length = locaTable.glyphLength(glyphId);
+
+      return glyphTable.glyph(offset, length);
+  }
+  
   @Override
   public boolean subset(Subsetter subsetter, Font font, Builder fontBuilder) {
     List<Integer> permutationTable = subsetter.glyphMappingTable();
@@ -42,13 +52,17 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
       return false;
     }
     HorizontalMetricsTable origMetrics = font.getTable(Tag.hmtx);
+    GlyphTable glyphTable = font.getTable(Tag.glyf);
+    LocaTable locaTable = font.getTable(Tag.loca);
     List<HorizontalMetricsTableBuilder.LongHorMetric> metrics =
         new ArrayList<HorizontalMetricsTableBuilder.LongHorMetric>();
     for (int i = 0; i < permutationTable.size(); i++) {
       int origGlyphId = permutationTable.get(i);
       int advanceWidth = origMetrics.advanceWidth(origGlyphId);
       int lsb = origMetrics.leftSideBearing(origGlyphId);
-      metrics.add(new HorizontalMetricsTableBuilder.LongHorMetric(advanceWidth, lsb));
+      Glyph glyph = getGlyph(locaTable, glyphTable, origGlyphId);
+      //System.out.println(glyph);
+      metrics.add(new HorizontalMetricsTableBuilder.LongHorMetric(advanceWidth, lsb, glyph.xMin(), glyph.xMax(), glyph.numberOfContours()));
     }
     new HorizontalMetricsTableBuilder(fontBuilder, metrics).build();
     return true;

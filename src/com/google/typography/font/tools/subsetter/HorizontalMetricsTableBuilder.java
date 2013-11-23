@@ -27,7 +27,8 @@ import java.util.List;
  * A builder method for the hmtx (horizontal metrics) table. The goal is for this
  * logic to go into the HorizontalMetricsTable.Builder class, but for now is separate.
  * 
- * Note that this class also computes the advanceWidthMax value, which goes into the
+ * Note that this class also computes the advanceWidthMax, minLeftSideBearing,
+ * minRightSideBearing, and xMaxExtent values, which goes into the
  * hhea table, leading to somewhat awkward plumbing.
  * 
  * @author Raph Levien
@@ -37,10 +38,16 @@ public class HorizontalMetricsTableBuilder {
   public static class LongHorMetric {
     public int advanceWidth;
     public int lsb;
+    public int xMin;
+    public int xMax;
+    public int numContours;
     
-    public LongHorMetric(int advanceWidth, int lsb) {
+    public LongHorMetric(int advanceWidth, int lsb, int xMin, int xMax, int numContours) {
       this.advanceWidth = advanceWidth;
       this.lsb = lsb;
+      this.xMin = xMin;
+      this.xMax = xMax;
+      this.numContours = numContours;
     }
   }
   
@@ -66,19 +73,37 @@ public class HorizontalMetricsTableBuilder {
     WritableFontData data = WritableFontData.createWritableFontData(size);
     int index = 0;
     int advanceWidthMax = 0;
+    int minlsb = 0xFFFF;
+    int minrsb = 0xFFFF;
+    int xMaxExtent = 0;
+    
     for (int i = 0; i < numberOfHMetrics; i++) {
-      int advanceWidth = metrics.get(i).advanceWidth;
-      advanceWidthMax = Math.max(advanceWidth, advanceWidthMax);
-      index += data.writeUShort(index, advanceWidth);
-      index += data.writeShort(index, metrics.get(i).lsb);
+      LongHorMetric lhm = metrics.get(i);
+      if (lhm.numContours > 0) {
+        advanceWidthMax = Math.max(lhm.advanceWidth, advanceWidthMax);
+        minlsb = Math.min(lhm.lsb, minlsb);
+        minrsb = Math.min(lhm.advanceWidth - lhm.lsb - lhm.xMax + lhm.xMin, minrsb);
+        xMaxExtent = Math.max(lhm.lsb + lhm.xMax - lhm.xMin, xMaxExtent);
+      }
+      index += data.writeUShort(index, lhm.advanceWidth);
+      index += data.writeShort(index, lhm.lsb);
     }
     for (int i = numberOfHMetrics; i < nMetrics; i++) {
-      index += data.writeShort(index, metrics.get(i).lsb);
+      LongHorMetric lhm = metrics.get(i);
+      if (lhm.numContours > 0) {
+        minlsb = Math.min(lhm.lsb, minlsb);
+        minrsb = Math.min(lhm.advanceWidth - lhm.lsb - lhm.xMax + lhm.xMin, minrsb);
+        xMaxExtent = Math.max(lhm.lsb + lhm.xMax - lhm.xMin, xMaxExtent);
+      }
+      index += data.writeShort(index, lhm.lsb);
     }
     fontBuilder.newTableBuilder(Tag.hmtx, data);
     HorizontalHeaderTable.Builder hheaBuilder =
         (HorizontalHeaderTable.Builder) fontBuilder.getTableBuilder(Tag.hhea);
     hheaBuilder.setNumberOfHMetrics(numberOfHMetrics);
     hheaBuilder.setAdvanceWidthMax(advanceWidthMax);
+    hheaBuilder.setMinLeftSideBearing(minlsb);
+    hheaBuilder.setMinRightSideBearing(minrsb);
+    hheaBuilder.setXMaxExtent(xMaxExtent);
   }
 }
