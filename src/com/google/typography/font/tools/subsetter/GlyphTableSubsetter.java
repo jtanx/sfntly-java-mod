@@ -20,9 +20,8 @@ import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.data.ReadableFontData;
 import com.google.typography.font.sfntly.table.core.MaximumProfileTable;
-import com.google.typography.font.sfntly.table.truetype.Glyph;
-import com.google.typography.font.sfntly.table.truetype.GlyphTable;
-import com.google.typography.font.sfntly.table.truetype.LocaTable;
+import com.google.typography.font.sfntly.table.truetype.*;
+import com.google.typography.font.sfntly.table.truetype.Glyph.GlyphType;
 
 import java.io.IOException;
 import java.util.List;
@@ -69,6 +68,8 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
     }
     Map<Integer, Integer> inverseMap = subsetter.getInverseMapping();
 
+    int maxPoints = 0, maxContours = 0, maxCompositePoints = 0, maxCompositeContours = 0;
+    int maxSizeOfInstructions = 0;
     List<Glyph.Builder<? extends Glyph>> glyphBuilders = glyphTableBuilder.glyphBuilders();
     for (int oldGlyphId : permutationTable) {
       // TODO(stuartg): add subsetting individual glyph data - remove hints etc.
@@ -87,7 +88,18 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
         System.out.println("\tnew glyph builder = " + glyphBuilder);
       }
       glyphBuilders.add(glyphBuilder);
-
+      
+      maxSizeOfInstructions = Math.max(glyph.instructionSize(), maxSizeOfInstructions);
+      if (glyph.glyphType() == GlyphType.Simple){
+        SimpleGlyph simple  = (SimpleGlyph) glyph;
+        int nPoints = 0;
+        
+        maxContours = Math.max(simple.numberOfContours(), maxContours);
+        for (int i = 0; i < simple.numberOfContours(); i++) {
+          nPoints += simple.numberOfPoints(i);
+        }
+        maxPoints = Math.max(nPoints, maxPoints);
+      }
     }
     List<Integer> locaList = glyphTableBuilder.generateLocaList();
     if (DEBUG) {
@@ -97,6 +109,9 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
     MaximumProfileTable.Builder maxpBuilder =
       (MaximumProfileTable.Builder) fontBuilder.getTableBuilder(Tag.maxp);
     maxpBuilder.setNumGlyphs(locaTableBuilder.numGlyphs());
-    return true;
+    maxpBuilder.maxPoints(maxPoints);
+    maxpBuilder.setMaxContours(maxContours);
+    maxpBuilder.setMaxSizeOfInstructions(maxSizeOfInstructions);
+    return true; //TODO set maxp for composite values
   }
 }
