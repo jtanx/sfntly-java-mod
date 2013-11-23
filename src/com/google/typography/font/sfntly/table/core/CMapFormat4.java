@@ -28,6 +28,9 @@ public final class CMapFormat4 extends CMap {
 
   @Override
   public int glyphId(int character) {
+    if (character >= 0xFFFF) { //Unicode BMP for cmap format 4
+      return CMapTable.NOTDEF;
+    }
     int segment = this.data.searchUShort(CMapFormat4.startCodeOffset(this.segCount),
         FontData.DataSize.USHORT.size(),
         Offset.format4EndCount.offset,
@@ -130,6 +133,12 @@ public final class CMapFormat4 extends CMap {
   private static int idRangeOffset(ReadableFontData data, int segCount, int index) {
     int idRangeOffset =
         data.readUShort(idRangeOffsetOffset(segCount) + index * FontData.DataSize.USHORT.size());
+    if ((idRangeOffset & 1) != 0) { //Detect bad offsets
+      if (index == segCount - 1) {
+        idRangeOffset = 0;
+      }
+    }
+    
     return idRangeOffset;
   }
 
@@ -137,6 +146,7 @@ public final class CMapFormat4 extends CMap {
     int idRangeOffsetOffset =
         Offset.format4EndCount.offset + ((2 * segCount) + 1) * FontData.DataSize.USHORT.size()
             + segCount * FontData.DataSize.SHORT.size();
+    
     return idRangeOffsetOffset;
   }
 
@@ -183,7 +193,13 @@ public final class CMapFormat4 extends CMap {
    */
   public int idRangeOffset(int segment) {
     isValidIndex(segment);
-    return this.data.readUShort(this.idRangeOffsetLocation(segment));
+    int ret = this.data.readUShort(this.idRangeOffsetLocation(segment));
+    if ((ret & 1) != 0) { //Detect bad offset
+      if (segment == segCount - 1) {
+        ret = 0;
+      }
+    }
+    return ret;
   }
 
   /**

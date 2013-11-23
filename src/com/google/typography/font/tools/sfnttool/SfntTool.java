@@ -127,6 +127,8 @@ public class SfntTool {
       Font font = fontArray[0];
       List<CMapTable.CMapId> cmapIds = new ArrayList<CMapTable.CMapId>();
       cmapIds.add(CMapTable.CMapId.WINDOWS_BMP);
+      cmapIds.add(CMapTable.CMapId.getInstance(Font.PlatformId.Windows.value(),
+              Font.WindowsEncodingId.Symbol.value()));
       byte[] newFontData = null;
       for (int i = 0; i < nIters; i++) {
         Font newFont = font;

@@ -97,7 +97,9 @@ abstract class ByteArray<T extends ByteArray<T>> {
    * @return the number of bytes read from the buffer
    */
   public int get(int index, byte[] b, int offset, int length) {
-    if (index < 0 || index >= this.filledLength) {
+    if (length <= 0) {
+      return 0;
+    } else if (index < 0 || index >= this.filledLength) {
       return -1;
     }
     int actualLength = Math.min(length, this.filledLength - index);
