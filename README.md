@@ -5,4 +5,4 @@ This repository contains a modified version of [sfntly](http://code.google.com/p
 See [here](https://github.com/jtanx/sfntly-java-mod/releases) for builds. These have been built with debugging enabled, so the stack traces are useful when something goes wrong.
 
 ## Building
-Use ant to build sfntly (as per original install instructions). Since the libs folder is not included in this repository, you need to download and install the files located in [this](http://code.google.com/p/sfntly/source/browse/#svn%2Ftrunk%2Fjava%2Flib) folder.
+Use [ant](http://ant.apache.org/manual/install.html) to build sfntly (run the command `ant` from the console while located in the sfntly directory containing `build.xml`). Since the libs folder is not included in this repository, you need to download and install the files located in [this](http://code.google.com/p/sfntly/source/browse/#svn%2Ftrunk%2Fjava%2Flib) folder.
