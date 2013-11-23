@@ -23,9 +23,14 @@ import com.google.typography.font.sfntly.table.core.CMap;
 import com.google.typography.font.sfntly.table.core.CMap.CMapFormat;
 import com.google.typography.font.sfntly.table.core.CMapFormat4;
 import com.google.typography.font.sfntly.table.core.CMapTable;
+import com.google.typography.font.sfntly.table.core.OS2Table;
+import com.google.typography.font.sfntly.table.truetype.Glyph;
+import com.google.typography.font.sfntly.table.truetype.GlyphTable;
+import com.google.typography.font.sfntly.table.truetype.LocaTable;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,40 +39,66 @@ import java.util.Map;
 public class RenumberingCMapTableSubsetter extends TableSubsetterImpl {
 
   public RenumberingCMapTableSubsetter() {
-    super(Tag.cmap);
+    super(Tag.cmap, Tag.OS_2);
   }
  
-  private static CMapFormat4 getCMapFormat4(Font font) {
+  private static CMapFormat4 getCMapFormat4(Subsetter subsetter, Font font) {
     CMapTable cmapTable = font.getTable(Tag.cmap);
-    for (CMap cmap : cmapTable) {
-      if (cmap.format() == CMapFormat.Format4.value()) {
+    
+    for (CMapTable.CMapId cmapId : subsetter.cmapId()) {
+      CMap cmap = cmapTable.cmap(cmapId);
+      if (cmap.format() == CMapFormat.Format4.value())
         return (CMapFormat4) cmap;
-      }
     }
     return null;
   }
   
-  static Map<Integer, Integer> computeMapping(Subsetter subsetter, Font font) {
-    CMapFormat4 cmap4 = getCMapFormat4(font);
-    if (cmap4 == null) {
-      throw new RuntimeException("CMap format 4 table in source font not found");
-    }
+  Map<Integer, Integer> computeMapping(Subsetter subsetter, CMapFormat4 cmap4) {
     Map<Integer, Integer> inverseMapping = subsetter.getInverseMapping();
     Map<Integer, Integer> mapping = new HashMap<Integer, Integer>();
+    Map<Integer, Integer> remap = subsetter.remappedGlyphs();
+    
+    for (Integer unicode : remap.keySet()) {
+      int glyph = remap.get(unicode);
+      if (glyph != 0 && inverseMapping.containsKey(glyph)) {
+          mapping.put(unicode, inverseMapping.get(glyph));
+      }
+    }
+    
     for (Integer unicode : cmap4) {
-      int glyph = cmap4.glyphId(unicode);
-      if (inverseMapping.containsKey(glyph)) {
-        mapping.put(unicode, inverseMapping.get(glyph));
+      if (!remap.containsKey(unicode)) {
+        int glyph = cmap4.glyphId(unicode);
+        if (glyph != 0 && inverseMapping.containsKey(glyph)) {
+            mapping.put(unicode, inverseMapping.get(glyph));
+        }
       }
     }
     return mapping;
   }
-  
+    
   @Override
   public boolean subset(Subsetter subsetter, Font font, Builder fontBuilder) throws IOException {
+    CMapFormat4 cmap4 = getCMapFormat4(subsetter, font);
+    if (cmap4 == null) {
+      throw new RuntimeException("CMap format 4 table in source font not found");
+    }
+    
+    Map<Integer, Integer> mapping = computeMapping(subsetter, cmap4);
     CMapTableBuilder cmapBuilder =
-        new CMapTableBuilder(fontBuilder, computeMapping(subsetter, font));
+        new CMapTableBuilder(fontBuilder, mapping, cmap4.cmapId());
     cmapBuilder.build();
+    
+    OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
+    int min = 0xFFFF, max = 0;
+    for (int unicode : mapping.keySet()) {
+      if (unicode < min)
+        min = unicode;
+      if (unicode > max && unicode != 0xFFFF)
+        max = unicode;
+    }
+    os2.setUsFirstCharIndex(min);
+    os2.setUsLastCharIndex(max);
+    
     return true;
   }
 

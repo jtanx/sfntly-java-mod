@@ -34,6 +34,9 @@ public class RenumberingSubsetter extends Subsetter {
     temp.add(new RenumberingCMapTableSubsetter());
     temp.add(new PostScriptTableSubsetter());
     temp.add(new HorizontalMetricsTableSubsetter());
+    //temp.add(new NameTableSubsetter());
+    //temp.add(new OS2TableSubsetter());
+    temp.add(new HeadTableSubsetter());
     tableSubsetters = temp;
   }
 
@@ -45,5 +48,6 @@ public class RenumberingSubsetter extends Subsetter {
   protected void setUpTables(Font.Builder fontBuilder) {
     fontBuilder.newTableBuilder(Tag.hhea, font.getTable(Tag.hhea).readFontData());
     fontBuilder.newTableBuilder(Tag.maxp, font.getTable(Tag.maxp).readFontData());
+    fontBuilder.newTableBuilder(Tag.OS_2, font.getTable(Tag.OS_2).readFontData());
   }
 }

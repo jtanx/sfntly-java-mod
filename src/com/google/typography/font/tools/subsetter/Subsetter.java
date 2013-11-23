@@ -26,6 +26,7 @@ import com.google.typography.font.sfntly.table.core.CMapTable;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +53,7 @@ public class Subsetter {
   private Set<Integer> removeTables;
   private List<Integer> newToOldGlyphs;
   private List<CMapTable.CMapId> cmapIds;
+  private Map<Integer, Integer> remappedGlyphs;
 
   // inverse of mapping, computed lazily
   private Map<Integer, Integer> oldToNewGlyphs = null;
@@ -61,8 +63,12 @@ public class Subsetter {
     this.fontFactory = fontFactory;
   }
 
-  public void setGlyphs(List<Integer> glyphs) {
+  public void setGlyphs(Collection<Integer> glyphs) {
     this.newToOldGlyphs = new ArrayList<Integer>(glyphs);
+  }
+  
+  public void setRemapping(Map<Integer, Integer> unicodeToGlyph) {
+    this.remappedGlyphs = new HashMap<Integer, Integer>(unicodeToGlyph);
   }
 
   /**
@@ -141,6 +147,10 @@ public class Subsetter {
     return fontBuilder;
   }
 
+  Map<Integer, Integer> remappedGlyphs() {
+    return this.remappedGlyphs;
+  }
+  
   /**
    * Get the permutation table of the old glyph id to the new glyph id.
    *
