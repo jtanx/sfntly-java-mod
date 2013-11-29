@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -959,17 +960,50 @@ public class Font {
         SortedSet<Header> headers, FontInputStream is) throws IOException {
       Map<Header, WritableFontData> tableData =
           new HashMap<Header, WritableFontData>(headers.size());
+      Header last = null;
+      
       logger.fine("########  Reading Table Data");
       for (Header tableHeader : headers) {
-        is.skip(tableHeader.offset() - is.position());
+        long skip = tableHeader.offset() - is.position();
+        WritableFontData data = null;
+        
+        if (skip < 0 && last != null) { //Overlapped table
+          WritableFontData lastData = tableData.get(last);
+          
+          Object[] params = {Tag.stringValue(tableHeader.tag()),
+                             Tag.stringValue(last.tag()),
+                             Long.toHexString(is.position()),
+                             Integer.toHexString(tableHeader.offset())};
+          logger.log(Level.WARNING, 
+                     "The {0} table overlaps with the {1} table - " +
+                     "{0} ended at 0x{2}, but {1} starts at 0x{3}. " +
+                     "Attempting read from the indicated offset 0x{3}", 
+                     params);
+          int position = lastData.length() + (int) skip;
+          if (position >= 0) { //Table overlap limited to previous table only
+            byte[] raw = new byte[tableHeader.length()];
+            lastData.readBytes(position, raw, 0, (int)(-skip));
+            is.read(raw, (int)(-skip), tableHeader.length() + (int) skip);
+            data = WritableFontData.createWritableFontData(raw);
+          } else {
+            logger.warning("Table completely overlaps previous table. " +
+                           "Ignoring this issue, but font is likely unreadable.");
+          }
+        } else {
+          is.skip(skip);
+        }
+        
         logger.finer("\t" + tableHeader);
         logger.finest("\t\tStream Position = " + Integer.toHexString((int) is.position()));
-        // don't close this or the whole stream is gone
-        FontInputStream tableIS = new FontInputStream(is, tableHeader.length());
-        // TODO(stuartg): start tracking bad tables and other errors
-        WritableFontData data = WritableFontData.createWritableFontData(tableHeader.length());
-        data.copyFrom(tableIS, tableHeader.length());
+        if (data == null) {
+          // don't close this or the whole stream is gone
+          FontInputStream tableIS = new FontInputStream(is, tableHeader.length());
+          // TODO(stuartg): start tracking bad tables and other errors
+          data = WritableFontData.createWritableFontData(tableHeader.length());
+          data.copyFrom(tableIS, tableHeader.length());
+        }
         tableData.put(tableHeader, data);
+        last = tableHeader;
       }
       return tableData;
     }
