@@ -65,7 +65,7 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
       Glyph cGlyph = glyphTable.glyph(offset, length);
       
       if (cGlyph.glyphType() == GlyphType.Composite) {
-        computeCompositeValues(glyphTable, locaTable, (CompositeGlyph) glyph, values);
+        computeCompositeValues(glyphTable, locaTable, (CompositeGlyph) cGlyph, values);
       } else {
         SimpleGlyph sGlyph = (SimpleGlyph) cGlyph;
         values[1] += sGlyph.numberOfContours();
