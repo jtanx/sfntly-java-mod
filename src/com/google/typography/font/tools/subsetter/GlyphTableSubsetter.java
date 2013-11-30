@@ -43,6 +43,39 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
     super(Tag.glyf, Tag.loca, Tag.maxp);
   }
 
+  /**
+   * Computes composite maxp values.
+   * @param glyphTable The glyf table
+   * @param locaTable The loca table
+   * @param glyph The current composite glyph to compute values for
+   * @param values An array that holds the computed values.
+   *               values[0]: maxComponentDepth
+   *               values[1]: maxCompositeContours
+   *               values[2]: maxCompositePoints;
+   */
+  private static void computeCompositeValues(GlyphTable glyphTable, LocaTable locaTable,
+                                 CompositeGlyph glyph, int[] values) {
+    
+    values[0]++;
+    
+    for (int i = 0; i < glyph.numGlyphs(); i++) {
+      int glyphId = glyph.glyphIndex(i);
+      int offset = locaTable.glyphOffset(glyphId);
+      int length = locaTable.glyphLength(glyphId);
+      Glyph cGlyph = glyphTable.glyph(offset, length);
+      
+      if (cGlyph.glyphType() == GlyphType.Composite) {
+        computeCompositeValues(glyphTable, locaTable, (CompositeGlyph) glyph, values);
+      } else {
+        SimpleGlyph sGlyph = (SimpleGlyph) cGlyph;
+        values[1] += sGlyph.numberOfContours();
+        for (int j = 0; j < sGlyph.numberOfContours(); j++) {
+          values[2] += sGlyph.numberOfPoints(j);
+        }
+      }
+    }
+  }
+  
   @Override
   public boolean subset(Subsetter subsetter, Font font, Font.Builder fontBuilder)
       throws IOException {
@@ -69,6 +102,7 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
     Map<Integer, Integer> inverseMap = subsetter.getInverseMapping();
 
     int maxPoints = 0, maxContours = 0, maxCompositePoints = 0, maxCompositeContours = 0;
+    int maxComponentDepth = 0, maxComponentElements = 0;
     int maxSizeOfInstructions = 0;
     List<Glyph.Builder<? extends Glyph>> glyphBuilders = glyphTableBuilder.glyphBuilders();
     for (int oldGlyphId : permutationTable) {
@@ -99,6 +133,14 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
           nPoints += simple.numberOfPoints(i);
         }
         maxPoints = Math.max(nPoints, maxPoints);
+      } else {
+        CompositeGlyph composite = (CompositeGlyph) glyph;
+        int values[] = {0, 0, 0};
+        computeCompositeValues(glyphTable, locaTable, composite, values);
+        maxComponentElements = Math.max(composite.numGlyphs(), maxComponentElements);
+        maxComponentDepth = Math.max(values[0], maxComponentDepth);
+        maxCompositeContours = Math.max(values[1], maxCompositeContours);
+        maxCompositePoints = Math.max(values[2], maxCompositePoints);
       }
     }
     List<Integer> locaList = glyphTableBuilder.generateLocaList();
@@ -112,6 +154,11 @@ public class GlyphTableSubsetter extends TableSubsetterImpl {
     maxpBuilder.maxPoints(maxPoints);
     maxpBuilder.setMaxContours(maxContours);
     maxpBuilder.setMaxSizeOfInstructions(maxSizeOfInstructions);
-    return true; //TODO set maxp for composite values
+    maxpBuilder.setMaxComponentElements(maxComponentElements);
+    maxpBuilder.setMaxComponentDepth(maxComponentDepth);
+    maxpBuilder.setMaxCompositeContours(maxCompositeContours);
+    maxpBuilder.setMaxCompositePoints(maxCompositePoints);
+    
+    return true;
   }
 }
