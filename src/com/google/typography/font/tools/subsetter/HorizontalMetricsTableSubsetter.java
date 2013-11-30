@@ -20,6 +20,7 @@ import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.Font.Builder;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.table.core.HorizontalMetricsTable;
+import com.google.typography.font.sfntly.table.core.OS2Table;
 import com.google.typography.font.sfntly.table.truetype.Glyph;
 import com.google.typography.font.sfntly.table.truetype.GlyphTable;
 import com.google.typography.font.sfntly.table.truetype.LocaTable;
@@ -35,7 +36,7 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
   protected HorizontalMetricsTableSubsetter() {
     // Note: doesn't actually create the hhea table, that should be done in the
     // setUpTables method of the invoking subsetter.
-    super(Tag.hmtx, Tag.hhea);
+    super(Tag.hmtx, Tag.hhea, Tag.OS_2);
   }
   
   private static Glyph getGlyph(LocaTable locaTable, GlyphTable glyphTable, int glyphId) {
@@ -45,17 +46,30 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
       return glyphTable.glyph(offset, length);
   }
   
+  /**
+   * Subsets the horizontal metrics table. Also sets xAvgCharWidth in the OS/2
+   * table, since it iterates through the advance widths in the process.
+   * 
+   * @param subsetter
+   * @param font
+   * @param fontBuilder
+   * @return 
+   */
   @Override
   public boolean subset(Subsetter subsetter, Font font, Builder fontBuilder) {
     List<Integer> permutationTable = subsetter.glyphMappingTable();
     if (permutationTable == null) {
       return false;
     }
+    
+    OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
     HorizontalMetricsTable origMetrics = font.getTable(Tag.hmtx);
     GlyphTable glyphTable = font.getTable(Tag.glyf);
     LocaTable locaTable = font.getTable(Tag.loca);
     List<HorizontalMetricsTableBuilder.LongHorMetric> metrics =
         new ArrayList<HorizontalMetricsTableBuilder.LongHorMetric>();
+    int nnz = 0, widthsum = 0;
+    
     for (int i = 0; i < permutationTable.size(); i++) {
       int origGlyphId = permutationTable.get(i);
       int advanceWidth = origMetrics.advanceWidth(origGlyphId);
@@ -63,7 +77,15 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
       Glyph glyph = getGlyph(locaTable, glyphTable, origGlyphId);
       //System.out.println(glyph);
       metrics.add(new HorizontalMetricsTableBuilder.LongHorMetric(advanceWidth, lsb, glyph.xMin(), glyph.xMax(), glyph.numberOfContours()));
+    
+      if (advanceWidth > 0) {
+        nnz++;
+        widthsum += advanceWidth;
+      }
     }
+    
+    //Technically incorrect for versions < 3
+    os2.setXAvgCharWidth(nnz > 0 ? (widthsum / nnz) : 0);
     new HorizontalMetricsTableBuilder(fontBuilder, metrics).build();
     return true;
   }

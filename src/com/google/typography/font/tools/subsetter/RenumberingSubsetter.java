@@ -19,8 +19,10 @@ package com.google.typography.font.tools.subsetter;
 import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.FontFactory;
 import com.google.typography.font.sfntly.Tag;
+import java.util.ArrayList;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,13 +31,14 @@ import java.util.Set;
 public class RenumberingSubsetter extends Subsetter {
 
   {
-    Set<TableSubsetter> temp = new HashSet<TableSubsetter>();
+    //There must be an order to the subsetting process.
+    List<TableSubsetter> temp = new ArrayList<TableSubsetter>();//new HashSet<TableSubsetter>();
     temp.add(new GlyphTableSubsetter());
     temp.add(new RenumberingCMapTableSubsetter());
     temp.add(new PostScriptTableSubsetter());
     temp.add(new HorizontalMetricsTableSubsetter());
     //temp.add(new NameTableSubsetter());
-    //temp.add(new OS2TableSubsetter());
+    temp.add(new OS2TableSubsetter());
     temp.add(new HeadTableSubsetter());
     tableSubsetters = temp;
   }

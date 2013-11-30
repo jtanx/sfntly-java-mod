@@ -24,13 +24,11 @@ import com.google.typography.font.sfntly.table.core.CMap.CMapFormat;
 import com.google.typography.font.sfntly.table.core.CMapFormat4;
 import com.google.typography.font.sfntly.table.core.CMapTable;
 import com.google.typography.font.sfntly.table.core.OS2Table;
-import com.google.typography.font.sfntly.table.truetype.Glyph;
-import com.google.typography.font.sfntly.table.truetype.GlyphTable;
-import com.google.typography.font.sfntly.table.truetype.LocaTable;
+import com.google.typography.font.sfntly.table.core.OS2Table.UnicodeRange;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,16 +86,28 @@ public class RenumberingCMapTableSubsetter extends TableSubsetterImpl {
         new CMapTableBuilder(fontBuilder, mapping, cmap4.cmapId());
     cmapBuilder.build();
     
+    //OS/2 info. OS/2 info is split across the subsetters
     OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
+    EnumSet<UnicodeRange> unicodeRange = EnumSet.noneOf(UnicodeRange.class);
+    
     int min = 0xFFFF, max = 0;
     for (int unicode : mapping.keySet()) {
       if (unicode < min)
         min = unicode;
       if (unicode > max && unicode != 0xFFFF)
         max = unicode;
+      
+      UnicodeRange range = OS2TableSubsetter.unicodeToRange(unicode);
+      if (range != null) {
+        unicodeRange.add(range);
+      }
     }
     os2.setUsFirstCharIndex(min);
     os2.setUsLastCharIndex(max);
+    
+    //Version 0 must have these bits set to 0.
+    if (os2.tableVersion() > 0)
+      os2.setUlUnicodeRange(unicodeRange);
     
     return true;
   }
