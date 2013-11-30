@@ -18,7 +18,10 @@
     <javac srcdir="${src.dir}" 
       destdir="${classes.dir}" 
       classpathref="classpath" 
-      includeantruntime="false" debug="true" />
+      includeantruntime="false" debug="true">
+      
+      <compilerarg value="-Xlint:unchecked" />
+    </javac>
   </target>
 
   <target name="sfntly-jar" depends="compile">
