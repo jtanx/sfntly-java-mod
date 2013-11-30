@@ -75,6 +75,10 @@ public class HeadTableSubsetter extends TableSubsetterImpl {
     head.setYMin(yMin);
     head.setYMax(yMax);
     
+    int flags = head.flagsAsInt();
+    if (!font.hasTable(Tag.hdmx) && !font.hasTable(Tag.LTSH))
+      flags &= ~(1<<4); //Can't be nonlinear if hdmx and LTSH are not present.
+    head.setFlagsAsInt(flags);
    // head.setModified(modified);
     return true;
   }
