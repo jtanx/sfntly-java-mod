@@ -47,7 +47,7 @@ public class Subsetter {
   //private SmartFontBuilder fontBuilder;
   private FontFactory fontFactory;
   // TODO(stuartg): can TableSubsetter become TableProcessor?
-  protected Set<TableSubsetter> tableSubsetters;
+  protected Iterable<TableSubsetter> tableSubsetters;
 
   // settings from user
   private Set<Integer> removeTables;
