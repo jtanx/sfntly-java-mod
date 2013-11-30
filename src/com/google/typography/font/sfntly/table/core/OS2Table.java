@@ -381,6 +381,8 @@ public final class OS2Table extends Table {
     GeneralPunctuation,
     SuperscriptsAndSubscripts,
     CurrencySymbols,
+    CombiningDiacriticalMarksForSymbols,
+    LetterlikeSymbols,
     NumberForms,
     Arrows,
     MathematicalOperators,
