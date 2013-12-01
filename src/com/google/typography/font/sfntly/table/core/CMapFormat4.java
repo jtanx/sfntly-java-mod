@@ -11,11 +11,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A cmap format 4 sub table.
  */
 public final class CMapFormat4 extends CMap {
+  
+  private static final Logger logger =
+    Logger.getLogger(CMapFormat4.class.getCanonicalName());
+  
   private final int segCount;
   private final int glyphIdArrayOffset;
 
@@ -61,10 +67,19 @@ public final class CMapFormat4 extends CMap {
     if (idRangeOffset == 0) {
       return (character + this.idDelta(segment)) % 65536;
     }
-    int gid = this.data.readUShort(
-        idRangeOffset + this.idRangeOffsetLocation(segment) + 2 * (character - startCode));
-    if (gid != 0) {
-      gid = (gid +  this.idDelta(segment)) % 65536;
+    
+    int gid = CMapTable.NOTDEF;
+    int offset = idRangeOffset + this.idRangeOffsetLocation(segment) + 
+                 2 * (character - startCode);
+    if (offset < 0 || offset + 2 > this.data.length()) {
+      logger.log(Level.WARNING, 
+                "Entry for U+{0} points outside the cmap4 table. Mapped to .notdef",
+                Integer.toHexString(character));
+    } else {
+      gid = this.data.readUShort(offset);
+      if (gid != 0) {
+        gid = (gid +  this.idDelta(segment)) % 65536;
+      }
     }
     return gid;
   }
