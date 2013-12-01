@@ -18,6 +18,7 @@ package com.google.typography.font.sfntly.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 /**
  * Writable font data wrapper. Supports writing of data primitives in the
@@ -26,7 +27,9 @@ import java.io.InputStream;
  * @author Stuart Gill
  */
 public final class WritableFontData extends ReadableFontData {
-
+  private static final Logger logger =
+    Logger.getLogger(WritableFontData.class.getCanonicalName());
+  
   /**
    * Constructs a writable font data object. If the length is specified as
    * positive then a fixed size font data object will be created. If the length
@@ -125,8 +128,11 @@ public final class WritableFontData extends ReadableFontData {
    */
   @Override
   public WritableFontData slice(int offset, int length) {
-    if (offset < 0 || (offset + length) > this.size()) {
+    if (offset < 0) {
       throw new IndexOutOfBoundsException("Attempt to bind data outside of its limits.");
+    } else if ((offset + length) > this.size()) {
+      logger.warning("Attempt to bind data outside of its limits. Truncating slice.");
+      length = this.size() - offset;
     }
     WritableFontData slice = new WritableFontData(this, offset, length);
     return slice;
