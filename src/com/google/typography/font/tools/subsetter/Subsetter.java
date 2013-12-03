@@ -152,7 +152,7 @@ public class Subsetter {
   }
   
   /**
-   * Get the permutation table of the old glyph id to the new glyph id.
+   * Get the permutation table of the new glyph id to the old glyph id.
    *
    * @return the permutation table
    */
