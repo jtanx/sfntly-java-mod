@@ -16,9 +16,11 @@
 
 package com.google.typography.font.sfntly.data;
 
+import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 
 /**
  * An input stream for reading font data.
@@ -87,6 +89,7 @@ import java.io.InputStream;
  */
 public class FontInputStream extends FilterInputStream {
   private long position;
+  private long markedPosition;
   private long length;  // bound on length of data to read
   private boolean bounded;
 
@@ -139,6 +142,18 @@ public class FontInputStream extends FilterInputStream {
     return this.read(b, 0, b.length);
   }
 
+  @Override
+  public void mark(int readlimit) {
+    this.markedPosition = this.position;
+    super.mark(readlimit);
+  }
+  
+  @Override
+  public void reset() throws IOException {
+    super.reset();
+    this.position = this.markedPosition;
+  }
+  
   /**
    * Get the current position in the stream in bytes.
    *

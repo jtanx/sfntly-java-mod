@@ -125,12 +125,11 @@ public final class FontFactory {
    * @throws IOException
    */
   public Font[] loadFonts(InputStream is) throws IOException {
-    PushbackInputStream pbis =
-      new PushbackInputStream(new BufferedInputStream(is), FontFactory.LOOKAHEAD_SIZE);
-    if (isCollection(pbis)) {
-      return loadCollection(pbis);
+    BufferedInputStream bis = new BufferedInputStream(is);
+    if (isCollection(bis)) {
+      return loadCollection(bis);
     }
-    return new Font[] {loadSingleOTF(pbis) };
+    return new Font[] {loadSingleOTF(bis) };
   }
 
   /**
@@ -146,12 +145,11 @@ public final class FontFactory {
    * @throws IOException
    */
   public Builder[] loadFontsForBuilding(InputStream is) throws IOException {
-    PushbackInputStream pbis =
-      new PushbackInputStream(new BufferedInputStream(is), FontFactory.LOOKAHEAD_SIZE);
-    if (isCollection(pbis)) {
-      return loadCollectionForBuilding(pbis);
+    BufferedInputStream bis = new BufferedInputStream(is);
+    if (isCollection(bis)) {
+      return loadCollectionForBuilding(bis);
     }
-    return new Builder[] {loadSingleOTFForBuilding(pbis) };
+    return new Builder[] {loadSingleOTFForBuilding(bis) };
   }
 
   private Font loadSingleOTF(InputStream is) throws IOException {
@@ -192,10 +190,11 @@ public final class FontFactory {
     return loadCollectionForBuilding(wfd);
   }
 
-  static private boolean isCollection(PushbackInputStream pbis) throws IOException {
+  static private boolean isCollection(BufferedInputStream bis) throws IOException {
     byte[] tag = new byte[4];
-    pbis.read(tag);
-    pbis.unread(tag);
+    bis.mark(tag.length);
+    bis.read(tag);
+    bis.reset();
     return Tag.ttcf == Tag.intValue(tag);
   }
 
