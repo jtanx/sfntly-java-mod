@@ -69,18 +69,19 @@ public final class CMapFormat4 extends CMap {
     }
     
     int gid = CMapTable.NOTDEF;
-    int offset = idRangeOffset + this.idRangeOffsetLocation(segment) + 
-                 2 * (character - startCode);
-    if (offset < 0 || offset + 2 > this.data.length()) {
+    try {
+      gid = this.data.readUShort(idRangeOffset + this.idRangeOffsetLocation(segment) + 2 * (character - startCode));
+    } catch (IndexOutOfBoundsException e) {
       logger.log(Level.WARNING, 
-                "Entry for U+{0} points outside the cmap4 table. Mapped to .notdef",
-                Integer.toHexString(character));
-    } else {
-      gid = this.data.readUShort(offset);
-      if (gid != 0) {
-        gid = (gid +  this.idDelta(segment)) % 65536;
-      }
+                 "Entry for U+" + Integer.toHexString(character) + 
+                 "points outside the cmap4 table. Mapped to .notdef",
+                 e);
     }
+
+    if (gid != CMapTable.NOTDEF) {
+      gid = (gid +  this.idDelta(segment)) % 65536;
+    }
+    
     return gid;
   }
 
