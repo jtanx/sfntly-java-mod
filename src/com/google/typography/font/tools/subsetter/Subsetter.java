@@ -161,7 +161,7 @@ public class Subsetter {
   }
 
   /**
-   * Get the inverse mapping, from new glyph id to old.
+   * Get the inverse mapping, from old glyph id to new.
    *
    * @return the inverse mapping
    */
