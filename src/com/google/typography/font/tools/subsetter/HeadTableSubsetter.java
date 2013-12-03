@@ -41,7 +41,7 @@ public class HeadTableSubsetter extends TableSubsetterImpl {
     
     for (i = 0; i < glyphIds.size(); i++) {
       glyph = getGlyph(locaTable, glyphTable, glyphIds.get(i));
-      if (glyph != null && glyph.numberOfContours() > 0) {
+      if (glyph != null && glyph.numberOfContours() != 0) {
         xMin = glyph.xMin();
         xMax = glyph.xMax();
         yMin = glyph.yMin();
@@ -54,7 +54,7 @@ public class HeadTableSubsetter extends TableSubsetterImpl {
     
     for (; i < glyphIds.size(); i++) {
       glyph = getGlyph(locaTable, glyphTable, glyphIds.get(i));
-      if (glyph != null && glyph.numberOfContours() > 0) {
+      if (glyph != null && glyph.numberOfContours() != 0) {
         if (xMin > glyph.xMin())
           xMin = glyph.xMin();
         if (xMax < glyph.xMax())

@@ -79,7 +79,7 @@ public class HorizontalMetricsTableBuilder {
     
     for (int i = 0; i < numberOfHMetrics; i++) {
       LongHorMetric lhm = metrics.get(i);
-      if (lhm.numContours > 0) {
+      if (lhm.numContours != 0) {
         advanceWidthMax = Math.max(lhm.advanceWidth, advanceWidthMax);
         minlsb = Math.min(lhm.lsb, minlsb);
         minrsb = Math.min(lhm.advanceWidth - lhm.lsb - lhm.xMax + lhm.xMin, minrsb);
@@ -90,7 +90,7 @@ public class HorizontalMetricsTableBuilder {
     }
     for (int i = numberOfHMetrics; i < nMetrics; i++) {
       LongHorMetric lhm = metrics.get(i);
-      if (lhm.numContours > 0) {
+      if (lhm.numContours != 0) {
         minlsb = Math.min(lhm.lsb, minlsb);
         minrsb = Math.min(lhm.advanceWidth - lhm.lsb - lhm.xMax + lhm.xMin, minrsb);
         xMaxExtent = Math.max(lhm.lsb + lhm.xMax - lhm.xMin, xMaxExtent);

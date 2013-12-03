@@ -104,25 +104,25 @@ public abstract class Glyph extends SubTable {
   }
 
   public int xMin() {
-    if (this.numberOfContours > 0)
+    if (this.numberOfContours != 0)
       return this.data.readShort(Offset.xMin.offset);
     return 0;
   }
 
   public int xMax() {
-    if (this.numberOfContours > 0)
+    if (this.numberOfContours != 0)
       return this.data.readShort(Offset.xMax.offset);
     return 0;
   }
 
   public int yMin() {
-    if (this.numberOfContours > 0)
+    if (this.numberOfContours != 0)
       return this.data.readShort(Offset.yMin.offset);
     return 0;
   }
 
   public int yMax() {
-    if (this.numberOfContours > 0)
+    if (this.numberOfContours != 0)
       return this.data.readShort(Offset.yMax.offset);
     return 0;
   }
