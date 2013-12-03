@@ -705,9 +705,14 @@ public final class NameTable extends SubTableContainerTable implements Iterable<
    * @return the name entry
    */
   public NameEntry nameEntry(int index) {
-    return new NameEntry(
-        this.platformId(index), this.encodingId(index), this.languageId(index),
-        this.nameId(index), this.nameAsBytes(index));
+    try {
+      return new NameEntry(
+          this.platformId(index), this.encodingId(index), this.languageId(index),
+          this.nameId(index), this.nameAsBytes(index));
+    } catch (IndexOutOfBoundsException e) {
+      //Return unknown for invalid entries
+      return new NameEntry(0, 0, 0, -1, new byte[0]);
+    }
   }
 
   /**
