@@ -84,8 +84,10 @@ public class HorizontalMetricsTableSubsetter extends TableSubsetterImpl {
       }
     }
     
-    //Technically incorrect for versions < 3
-    os2.setXAvgCharWidth(nnz > 0 ? (widthsum / nnz) : 0);
+    if (os2 != null) {
+      //Technically incorrect for versions < 3
+      os2.setXAvgCharWidth(nnz > 0 ? (widthsum / nnz) : 0);
+    }
     new HorizontalMetricsTableBuilder(fontBuilder, metrics).build();
     return true;
   }

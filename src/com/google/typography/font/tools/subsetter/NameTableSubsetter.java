@@ -2,12 +2,10 @@ package com.google.typography.font.tools.subsetter;
 
 import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.Font.Builder;
-import com.google.typography.font.sfntly.Font.PlatformId;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.table.core.NameTable;
 import com.google.typography.font.sfntly.table.core.NameTable.NameEntry;
 import com.google.typography.font.sfntly.table.core.NameTable.NameEntryBuilder;
-import com.google.typography.font.sfntly.table.core.NameTable.NameId;
 import java.io.IOException;
 
 /**

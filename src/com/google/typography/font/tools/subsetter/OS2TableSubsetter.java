@@ -212,11 +212,11 @@ public class OS2TableSubsetter extends TableSubsetterImpl {
   @Override
   public boolean subset(Subsetter subsetter, Font font, Font.Builder fontBuilder) throws IOException {
     OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
-    
-    int fsType = os2.fsTypeAsInt();
-    fsType &= ~0x0001; //Bit 0 is reserved, and must be zero;
-    os2.setFsType(fsType);
-    
+    if (os2 != null) {
+      int fsType = os2.fsTypeAsInt();
+      fsType &= ~0x0001; //Bit 0 is reserved, and must be zero;
+      os2.setFsType(fsType);
+    }
     return true;
   }
   

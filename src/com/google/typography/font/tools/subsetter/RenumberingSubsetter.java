@@ -19,6 +19,8 @@ package com.google.typography.font.tools.subsetter;
 import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.FontFactory;
 import com.google.typography.font.sfntly.Tag;
+import com.google.typography.font.sfntly.data.WritableFontData;
+import com.google.typography.font.sfntly.table.core.OS2Table;
 import java.util.ArrayList;
 
 import java.util.HashSet;
@@ -51,6 +53,8 @@ public class RenumberingSubsetter extends Subsetter {
   protected void setUpTables(Font.Builder fontBuilder) {
     fontBuilder.newTableBuilder(Tag.hhea, font.getTable(Tag.hhea).readFontData());
     fontBuilder.newTableBuilder(Tag.maxp, font.getTable(Tag.maxp).readFontData());
-    fontBuilder.newTableBuilder(Tag.OS_2, font.getTable(Tag.OS_2).readFontData());
+    if (font.getTable(Tag.OS_2) != null) {
+      fontBuilder.newTableBuilder(Tag.OS_2, font.getTable(Tag.OS_2).readFontData());
+    }  
   }
 }

@@ -88,26 +88,29 @@ public class RenumberingCMapTableSubsetter extends TableSubsetterImpl {
     
     //OS/2 info. OS/2 info is split across the subsetters
     OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
-    EnumSet<UnicodeRange> unicodeRange = EnumSet.noneOf(UnicodeRange.class);
-    
-    int min = 0xFFFF, max = 0;
-    for (int unicode : mapping.keySet()) {
-      if (unicode < min)
-        min = unicode;
-      if (unicode > max && unicode != 0xFFFF)
-        max = unicode;
-      
-      UnicodeRange range = OS2TableSubsetter.unicodeToRange(unicode);
-      if (range != null) {
-        unicodeRange.add(range);
+    if (os2 != null) {
+      EnumSet<UnicodeRange> unicodeRange = EnumSet.noneOf(UnicodeRange.class);
+
+      int min = 0xFFFF, max = 0;
+      for (int unicode : mapping.keySet()) {
+        if (unicode < min)
+          min = unicode;
+        if (unicode > max && unicode != 0xFFFF)
+          max = unicode;
+
+        UnicodeRange range = OS2TableSubsetter.unicodeToRange(unicode);
+        if (range != null) {
+          unicodeRange.add(range);
+        }
       }
-    }
-    os2.setUsFirstCharIndex(min);
-    os2.setUsLastCharIndex(max);
     
-    //Version 0 must have these bits set to 0.
-    if (os2.tableVersion() > 0)
-      os2.setUlUnicodeRange(unicodeRange);
+      os2.setUsFirstCharIndex(min);
+      os2.setUsLastCharIndex(max);
+
+      //Version 0 must have these bits set to 0.
+      if (os2.tableVersion() > 0)
+        os2.setUlUnicodeRange(unicodeRange);
+    }
     
     return true;
   }
