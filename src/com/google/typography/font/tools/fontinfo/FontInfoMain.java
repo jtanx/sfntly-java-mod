@@ -8,6 +8,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * This is the main class for the command-line version of the font info tool
@@ -19,6 +21,19 @@ public class FontInfoMain {
   private static final String PROGRAM_NAME = "java -jar fontinfo.jar";
 
   public static void main(String[] args) {
+    try {
+      //Determine if output is piped
+      if (System.console() == null) {
+        //Set the output format to UTF-8
+        PrintStream out = new PrintStream(System.out, true, "UTF-8");
+        System.setOut(out);
+        out.print('\ufeff');
+        out.flush();
+      }
+    } catch (UnsupportedEncodingException e) {
+      System.out.println("Warning: UTF-8 encoding not supported.");
+    }
+    
     CommandOptions options = new CommandOptions();
     JCommander commander = null;
     try {
