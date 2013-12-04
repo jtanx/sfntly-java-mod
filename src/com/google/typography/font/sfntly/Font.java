@@ -916,17 +916,13 @@ public class Font {
           locaTableBuilder.setFormatVersion(headerTableBuilder.indexToLocFormat());
         }
         if (locaTableBuilder.formatVersion() == IndexToLocFormat.shortOffset) {
-            locaTableBuilder.setNumGlyphs(locaTableBuilder.data().length() / 2 - 1);
+            numGlyphs = locaTableBuilder.data().length() / 2 - 1;
         } else {
-            locaTableBuilder.setNumGlyphs(locaTableBuilder.data().length() / 4 - 1);
+            numGlyphs = locaTableBuilder.data().length() / 4 - 1;
         }
       }
       
-      if (maxProfileBuilder == null) {
-        if (locaTableBuilder != null) {
-          numGlyphs = locaTableBuilder.numGlyphs();
-        }
-      } else {
+      if (maxProfileBuilder != null) {
         numGlyphs = maxProfileBuilder.numGlyphs();
       }
       
@@ -939,6 +935,10 @@ public class Font {
         }
       }
 
+      if (locaTableBuilder != null) {
+        locaTableBuilder.setNumGlyphs(numGlyphs);
+      }
+      
       if (hdmxTableBuilder != null) {
           hdmxTableBuilder.setNumGlyphs(numGlyphs);
       }      
