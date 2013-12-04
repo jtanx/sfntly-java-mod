@@ -43,7 +43,8 @@ public final class Header {
   public static final Comparator<Header> COMPARATOR_BY_OFFSET = new Comparator<Header>() {
     @Override
     public int compare(Header h1, Header h2) {
-      return h1.offset - h2.offset;
+      int comp = h1.offset - h2.offset;
+      return comp == 0 ? h1.length - h2.length : comp;
     }
   };
 
