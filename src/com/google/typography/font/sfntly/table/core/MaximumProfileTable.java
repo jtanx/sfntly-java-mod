@@ -151,11 +151,11 @@ public final class MaximumProfileTable extends Table {
     }
 
     public int tableVersion() {
-      return this.internalReadData().readUShort(Offset.version.offset);
+      return this.internalReadData().readFixed(Offset.version.offset);
     }
 
     public void setTableVersion(int version) {
-      this.internalWriteData().writeUShort(Offset.version.offset, version);
+      this.internalWriteData().writeFixed(Offset.version.offset, version);
     }
 
     public int numGlyphs() {
