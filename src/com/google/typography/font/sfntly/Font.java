@@ -27,6 +27,7 @@ import com.google.typography.font.sfntly.table.Header;
 import com.google.typography.font.sfntly.table.Table;
 import com.google.typography.font.sfntly.table.core.CMapTable;
 import com.google.typography.font.sfntly.table.core.FontHeaderTable;
+import com.google.typography.font.sfntly.table.core.FontHeaderTable.IndexToLocFormat;
 import com.google.typography.font.sfntly.table.core.HorizontalDeviceMetricsTable;
 import com.google.typography.font.sfntly.table.core.HorizontalHeaderTable;
 import com.google.typography.font.sfntly.table.core.HorizontalMetricsTable;
@@ -909,30 +910,37 @@ public class Font {
       HorizontalDeviceMetricsTable.Builder hdmxTableBuilder =
         (HorizontalDeviceMetricsTable.Builder) builderMap.get(Tag.hdmx);
 
+      int numGlyphs = 0;
+      if (locaTableBuilder != null) {
+        if (headerTableBuilder != null) {
+          locaTableBuilder.setFormatVersion(headerTableBuilder.indexToLocFormat());
+        }
+        if (locaTableBuilder.formatVersion() == IndexToLocFormat.shortOffset) {
+            locaTableBuilder.setNumGlyphs(locaTableBuilder.data().length() / 2 - 1);
+        } else {
+            locaTableBuilder.setNumGlyphs(locaTableBuilder.data().length() / 4 - 1);
+        }
+      }
+      
+      if (maxProfileBuilder == null) {
+        if (locaTableBuilder != null) {
+          numGlyphs = locaTableBuilder.numGlyphs();
+        }
+      } else {
+        numGlyphs = maxProfileBuilder.numGlyphs();
+      }
+      
       // set the inter table data required to build certain tables
       if (horizontalMetricsBuilder != null) {
-        if (maxProfileBuilder != null) {
-          horizontalMetricsBuilder.setNumGlyphs(maxProfileBuilder.numGlyphs());
-        }
+        horizontalMetricsBuilder.setNumGlyphs(numGlyphs);
         if (horizontalHeaderBuilder != null) {
           horizontalMetricsBuilder.setNumberOfHMetrics(
               horizontalHeaderBuilder.numberOfHMetrics());
         }
       }
 
-      if (locaTableBuilder != null) {
-        if (maxProfileBuilder != null) {
-          locaTableBuilder.setNumGlyphs(maxProfileBuilder.numGlyphs());
-        }
-        if (headerTableBuilder != null) {
-          locaTableBuilder.setFormatVersion(headerTableBuilder.indexToLocFormat());
-        }
-      }
-
       if (hdmxTableBuilder != null) {
-        if (maxProfileBuilder != null) {
-          hdmxTableBuilder.setNumGlyphs(maxProfileBuilder.numGlyphs());
-        }
+          hdmxTableBuilder.setNumGlyphs(numGlyphs);
       }      
     }
 
@@ -962,12 +970,16 @@ public class Font {
           new HashMap<Header, WritableFontData>(headers.size());
       
       //50MB limit
-      int length = Math.min(headers.last().offset() + headers.last().length(), 50 << 20);
-      is.mark(length);
+      int maxLength = Math.min(headers.last().offset() + headers.last().length(), 50 << 20);
+      is.mark(maxLength);
       logger.fine("########  Reading Table Data");
       for (Header tableHeader : headers) {
         long skip = tableHeader.offset() - is.position();
-        WritableFontData data = null;   
+        int length = tableHeader.length();
+        WritableFontData data;   
+        
+        if (length <= 0)
+          continue;
         
         if (skip < 0) {
           try {
@@ -984,10 +996,10 @@ public class Font {
         logger.finer("\t" + tableHeader);
         logger.finest("\t\tStream Position = " + Integer.toHexString((int) is.position()));
         // don't close this or the whole stream is gone
-        FontInputStream tableIS = new FontInputStream(is, tableHeader.length());
+        FontInputStream tableIS = new FontInputStream(is, length);
         // TODO(stuartg): start tracking bad tables and other errors
-        data = WritableFontData.createWritableFontData(tableHeader.length());
-        data.copyFrom(tableIS, tableHeader.length());
+        data = WritableFontData.createWritableFontData(length);
+        data.copyFrom(tableIS, length);
         tableData.put(tableHeader, data);
       }
       return tableData;
