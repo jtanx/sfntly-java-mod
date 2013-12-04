@@ -20,6 +20,7 @@ import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.FontFactory;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.data.WritableFontData;
+import com.google.typography.font.sfntly.table.core.MaximumProfileTable;
 import com.google.typography.font.sfntly.table.core.OS2Table;
 import java.util.ArrayList;
 
@@ -52,7 +53,14 @@ public class RenumberingSubsetter extends Subsetter {
   @Override
   protected void setUpTables(Font.Builder fontBuilder) {
     fontBuilder.newTableBuilder(Tag.hhea, font.getTable(Tag.hhea).readFontData());
-    fontBuilder.newTableBuilder(Tag.maxp, font.getTable(Tag.maxp).readFontData());
+    if (font.getTable(Tag.maxp) == null) {
+      MaximumProfileTable.Builder maxp = (MaximumProfileTable.Builder) fontBuilder.newTableBuilder(Tag.maxp);
+      maxp.setData(WritableFontData.createWritableFontData(32));
+      maxp.setTableVersion(0x00010000);
+      
+    } else {
+      fontBuilder.newTableBuilder(Tag.maxp, font.getTable(Tag.maxp).readFontData());
+    }
     if (font.getTable(Tag.OS_2) != null) {
       fontBuilder.newTableBuilder(Tag.OS_2, font.getTable(Tag.OS_2).readFontData());
     }  
