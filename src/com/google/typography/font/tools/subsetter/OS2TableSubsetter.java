@@ -214,7 +214,13 @@ public class OS2TableSubsetter extends TableSubsetterImpl {
     OS2Table.Builder os2 = (OS2Table.Builder)fontBuilder.getTableBuilder(Tag.OS_2);
     if (os2 != null) {
       int fsType = os2.fsTypeAsInt();
-      fsType &= ~0x0001; //Bit 0 is reserved, and must be zero;
+      //Zero out reserved bits, based on the OS/2 version number.
+      switch (os2.tableVersion()) {
+        case 0: case 1: 
+          fsType &= 0xE; break;
+        case 2: case 3: case 4:
+          fsType &= 0x30E; break;
+      }
       os2.setFsType(fsType);
     }
     return true;
