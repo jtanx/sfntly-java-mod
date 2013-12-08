@@ -24,8 +24,11 @@ public class NameTableSubsetter extends TableSubsetterImpl{
     NameTable.Builder nameTableBuilder = (NameTable.Builder)fontBuilder.newTableBuilder(Tag.name);
     for (NameEntry name : nameTable) {
       if (name.nameAsBytes().length > 0 && name.nameId() >= 0) {
+        int encodingId = name.encodingId();
+        //if (name.platformId() == 3)
+        //  encodingId = 1;
         NameEntryBuilder entry =  nameTableBuilder.nameBuilder(
-                                      name.platformId(), name.encodingId(), 
+                                      name.platformId(), encodingId, 
                                       name.languageId(), name.nameId());
         entry.setName(name.nameAsBytes());
       }

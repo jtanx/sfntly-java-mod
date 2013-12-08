@@ -21,12 +21,8 @@ import com.google.typography.font.sfntly.FontFactory;
 import com.google.typography.font.sfntly.Tag;
 import com.google.typography.font.sfntly.data.WritableFontData;
 import com.google.typography.font.sfntly.table.core.MaximumProfileTable;
-import com.google.typography.font.sfntly.table.core.OS2Table;
 import java.util.ArrayList;
-
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Raph Levien
