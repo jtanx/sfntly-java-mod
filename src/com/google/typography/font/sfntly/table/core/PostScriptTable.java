@@ -385,16 +385,17 @@ public final class PostScriptTable extends Table {
   
   public String glyphName(int glyphNum) {
     int numberOfGlyphs = numberOfGlyphs();
-    if (numberOfGlyphs > 0 && (glyphNum < 0 || glyphNum >= numberOfGlyphs)) {
-      throw new IndexOutOfBoundsException();
-    }
     int glyphNameIndex = 0;
-    if (version() == VERSION_1) {
-      glyphNameIndex = glyphNum;
-    } else if (version() == VERSION_2) {
-      glyphNameIndex = this.data.readUShort(Offset.glyphNameIndex.offset + 2 * glyphNum);
-    } else {
-      return null;
+    
+    //Map invalid entries to .notdef instead of raising exception
+    if (numberOfGlyphs > 0 && glyphNum >= 0 && glyphNum < numberOfGlyphs) {
+      if (version() == VERSION_1) {
+        glyphNameIndex = glyphNum;
+      } else if (version() == VERSION_2) {
+        glyphNameIndex = this.data.readUShort(Offset.glyphNameIndex.offset + 2 * glyphNum);
+      } else {
+        return null;
+      }
     }
     if (glyphNameIndex < NUM_STANDARD_NAMES) {
       return STANDARD_NAMES[glyphNameIndex];
