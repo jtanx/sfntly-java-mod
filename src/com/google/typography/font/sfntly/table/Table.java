@@ -31,6 +31,8 @@ import com.google.typography.font.sfntly.table.core.MaximumProfileTable;
 import com.google.typography.font.sfntly.table.core.NameTable;
 import com.google.typography.font.sfntly.table.core.OS2Table;
 import com.google.typography.font.sfntly.table.core.PostScriptTable;
+import com.google.typography.font.sfntly.table.core.VerticalHeaderTable;
+import com.google.typography.font.sfntly.table.core.VerticalMetricsTable;
 import com.google.typography.font.sfntly.table.opentype.GSubTable;
 import com.google.typography.font.sfntly.table.truetype.ControlProgramTable;
 import com.google.typography.font.sfntly.table.truetype.ControlValueTable;
@@ -251,6 +253,10 @@ public class Table extends FontDataTable {
         // break;
         // } else if (tag == vmtx) {
         // break;
+      } else if (tag == Tag.vhea) {
+        return VerticalHeaderTable.Builder.createBuilder(header, tableData);
+      } else if (tag == Tag.vmtx) {
+        return VerticalMetricsTable.Builder.createBuilder(header, tableData);
       } else if (tag == Tag.bhed) {
         return FontHeaderTable.Builder.createBuilder(header, tableData);
       } else if (tag == Tag.bdat) {

@@ -33,6 +33,8 @@ import com.google.typography.font.sfntly.table.core.HorizontalHeaderTable;
 import com.google.typography.font.sfntly.table.core.HorizontalMetricsTable;
 import com.google.typography.font.sfntly.table.core.MaximumProfileTable;
 import com.google.typography.font.sfntly.table.core.NameTable;
+import com.google.typography.font.sfntly.table.core.VerticalHeaderTable;
+import com.google.typography.font.sfntly.table.core.VerticalMetricsTable;
 import com.google.typography.font.sfntly.table.truetype.LocaTable;
 
 import java.io.IOException;
@@ -901,12 +903,16 @@ public class Font {
         (FontHeaderTable.Builder) builderMap.get(Tag.head);
       HorizontalHeaderTable.Builder horizontalHeaderBuilder =
         (HorizontalHeaderTable.Builder) builderMap.get(Tag.hhea);
+      VerticalHeaderTable.Builder verticalHeaderBuilder = 
+        (VerticalHeaderTable.Builder) builderMap.get(Tag.vhea);
       MaximumProfileTable.Builder maxProfileBuilder =
         (MaximumProfileTable.Builder) builderMap.get(Tag.maxp);
       LocaTable.Builder locaTableBuilder =
         (LocaTable.Builder) builderMap.get(Tag.loca);
       HorizontalMetricsTable.Builder horizontalMetricsBuilder =
         (HorizontalMetricsTable.Builder) builderMap.get(Tag.hmtx);
+      VerticalMetricsTable.Builder verticalMetricsBuilder = 
+        (VerticalMetricsTable.Builder) builderMap.get(Tag.vmtx);
       HorizontalDeviceMetricsTable.Builder hdmxTableBuilder =
         (HorizontalDeviceMetricsTable.Builder) builderMap.get(Tag.hdmx);
 
@@ -935,6 +941,14 @@ public class Font {
         }
       }
 
+      if (verticalMetricsBuilder != null) {
+        verticalMetricsBuilder.setNumGlyphs(numGlyphs);
+        if (verticalHeaderBuilder != null) {
+          verticalMetricsBuilder.setNumberOfVMetrics(
+              verticalHeaderBuilder.numberOfVMetrics());
+        }
+      }
+      
       if (locaTableBuilder != null) {
         locaTableBuilder.setNumGlyphs(numGlyphs);
       }
