@@ -36,7 +36,7 @@ public class RenumberingSubsetter extends Subsetter {
     temp.add(new RenumberingCMapTableSubsetter());
     temp.add(new PostScriptTableSubsetter());
     temp.add(new HorizontalMetricsTableSubsetter());
-    temp.add(new VerticalMetricsTableSubsetter());
+    //temp.add(new VerticalMetricsTableSubsetter());
     temp.add(new NameTableSubsetter());
     temp.add(new OS2TableSubsetter());
     temp.add(new HeadTableSubsetter());

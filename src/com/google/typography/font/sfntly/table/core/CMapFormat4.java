@@ -72,10 +72,9 @@ public final class CMapFormat4 extends CMap {
     try {
       gid = this.data.readUShort(idRangeOffset + this.idRangeOffsetLocation(segment) + 2 * (character - startCode));
     } catch (IndexOutOfBoundsException e) {
-      logger.log(Level.WARNING, 
-                 "Entry for U+" + Integer.toHexString(character) + 
-                 "points outside the cmap4 table. Mapped to .notdef",
-                 e);
+      logger.log(Level.WARNING,
+              "Entry for U+{0}points outside the cmap4 table. Mapped to .notdef",
+              Integer.toHexString(character));
     }
 
     if (gid != CMapTable.NOTDEF) {
